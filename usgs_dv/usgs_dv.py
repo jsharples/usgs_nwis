@@ -76,7 +76,12 @@ class BaseQuery(object):
                     self.request_url,
                     headers={"Accept-Encoding": "gzip"})
         data_response = request.urlopen(data_request)
-        result = gzip.decompress(data_response.read())
+        
+        if data_response.info().get('Content-Encoding') == 'gzip':
+            result = gzip.decompress(data_response.read())
+        else:
+            result = data_response.read()
+            
         self.raw_data = result.decode(data_response.info().get_content_charset('utf-8'))
        
         return self.raw_data
