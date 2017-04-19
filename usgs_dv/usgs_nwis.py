@@ -1,5 +1,5 @@
 
-__all__ = ['Streamflow_sites', 'BaseQuery']
+#__all__ = ['SitesQuery', 'BaseQuery', 'DataBySites']
 
 
 class pyUSGSError(Exception):

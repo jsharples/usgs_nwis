@@ -6,4 +6,4 @@ import gzip
 import io
 import matplotlib.pyplot as plt
 
-from usgs_dv import *
+from .usgs_nwis import SitesQuery, BaseQuery, DataBySites
