@@ -43,9 +43,6 @@ class BaseQuery(object):
             self._get_raw_data(**kwargs)
             
         self.data = json.loads(self.raw_data)
-       
-        #data_cnt = sum([len(x['values'][0]['value']) for x in self.data['value']['timeSeries']])
-        #print("{} data points found".format(data_cnt))
         
         return self.data
     
@@ -227,4 +224,5 @@ class DataBySites(BaseQuery):
             plt.figure(figsize=(15,7))          
             plt.plot([self._date_parse(x['dateTime']) for x in ts['data']],[x['value'] for x in ts['data']])
             plt.title(ts['site']+': '+ts['name'])
+            plt.ylabel(ts['description'])
             plt.show()
