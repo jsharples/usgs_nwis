@@ -62,11 +62,11 @@ pd.DataFrame(my_data.core_data[0]['data'])
 
 ## Useful links
 
-*[Instantaneous value testing tool](https://waterservices.usgs.gov/rest/IV-Test-Tool.html)
-*[Daily value testing tool](https://waterservices.usgs.gov/rest/DV-Test-Tool.html)
-*[Parameter listing: Physical](https://help.waterdata.usgs.gov/code/parameter_cd_query?group_cd=PHY)
-*[Hydrological Unit Codes (HUC)](https://water.usgs.gov/GIS/huc_name.html)
-*[state and County codes](https://help.waterdata.usgs.gov/code/county_query?fmt=html)
+* [Instantaneous value testing tool](https://waterservices.usgs.gov/rest/IV-Test-Tool.html)
+* [Daily value testing tool](https://waterservices.usgs.gov/rest/DV-Test-Tool.html)
+* [Parameter listing: Physical](https://help.waterdata.usgs.gov/code/parameter_cd_query?group_cd=PHY)
+* [Hydrological Unit Codes (HUC)](https://water.usgs.gov/GIS/huc_name.html)
+* [state and County codes](https://help.waterdata.usgs.gov/code/county_query?fmt=html)
            
 
 ## Licence
