@@ -1,6 +1,12 @@
 
-#__all__ = ['SitesQuery', 'BaseQuery', 'DataBySites']
+__all__ = ['SitesQuery', 'BaseQuery', 'DataBySites']
 
+from urllib import parse, request
+import json
+from datetime import datetime, timedelta
+import gzip
+import io
+import matplotlib.pyplot as plt
 
 class pyUSGSError(Exception):
         pass
@@ -8,17 +14,21 @@ class pyUSGSError(Exception):
 
 class BaseQuery(object):
     '''
-        The basic query to access the USGS water data service
-        
-        Args:
-           major_filter: must be a dict with a singe key - value pair
-           Keys must be one of:
-               sites - for a list of specifc site ids
-               stateCd - for a state abbreviaiton e.g. "ny"
-               huc - for a list of Hydrologic Unit Codes
-               bBox - specifiying a lat long bounding box
-               countyCd - for a list of county numbers      
-       
+    The basic query to access the USGS water data service
+    
+    Parameters
+    ----------
+    major_filter: dict 
+        Single key value pair, values can be lists, keys must be one of:
+        * sites - for a list of specifc site ids
+        * stateCd - for a state abbreviaiton e.g. "ny"
+        * huc - for a list of Hydrologic Unit Codes
+        * bBox - specifiying a lat long bounding box
+        * countyCd - for a list of county numbers      
+    service: str
+        The service to query, 'dv' for daily values, 'iv' for instantaneous
+    data_format: str
+        The format in which to get the data. Defult is `json`, if changed the `get_data` funciton will not work.
     '''
   
   
@@ -66,9 +76,8 @@ class BaseQuery(object):
     def _get_raw_data(self, **kwargs):
 
         self.request_url = self._make_request_url(**kwargs)
-        print(self.request_url)
-        
-        
+        #print(self.request_url)
+                
         data_request = request.Request(
                     self.request_url,
                     headers={"Accept-Encoding": "gzip"})
@@ -83,8 +92,8 @@ class BaseQuery(object):
        
         return self.raw_data
     
-    
-    def _date_parse(self, str_date):
+    @staticmethod
+    def _date_parse(str_date):
         
         if len(str_date) == 29 and str_date[-3]==':':
             str_date = str_date[:-3]+str_date[-2:]
@@ -101,27 +110,6 @@ class BaseQuery(object):
         
         if len(str_date) == 10:
             return datetime.strptime(str_date,'%Y-%m-%d')
-        
-    
-    @staticmethod   
-    def show_useful_links():
-        '''
-        print useful link
-        '''
-       
-        updated = datetime(2017,4,6)
-       
-        useful_links = {
-            "Daily value testing tool": "https://waterservices.usgs.gov/rest/DV-Test-Tool.html",
-            "Parameter listing: Physical" : "https://help.waterdata.usgs.gov/code/parameter_cd_query?group_cd=PHY",
-            "Hydrological Unit Codes (HUC)" : "https://water.usgs.gov/GIS/huc_name.html",
-            "State and County codes" : "https://help.waterdata.usgs.gov/code/county_query?fmt=html"
-           
-        }
-        
-        print('\n'.join([x+" - "+useful_links[x] for x in useful_links.keys()]))
-        print('\nLast updated {}'.format(updated))
-
         
 
 class SitesQuery(BaseQuery):
@@ -155,19 +143,15 @@ class SitesQuery(BaseQuery):
                     else:
                         data.append(l.split('\t'))
 
-       
-        #data_cnt = sum([len(x['values'][0]['value']) for x in self.data['value']['timeSeries']])
-        #print("{} data points found".format(data_cnt))
-        
         data = [{header[0][x]: y[x] for x in range(len(header[0]))} for y in data]
         self.data = {'data':data, 'info':info}
        
         return self.data
     
-    def get_site_ids(self):
+    def get_site_ids(self, **kwargs):
         
         if not self.data:
-            self.get_data()
+            self.get_data(**kwargs)
         
         return [s['site_no'] for s in self.data['data']]
             
@@ -177,23 +161,10 @@ class DataBySites(BaseQuery):
     '''
         Query class to get data by site ID
     '''
-    def __init__(self, sites, start_date, end_date, service='dv', parameter="00060", **kwargs):
+    def __init__(self, sites, service='dv', **kwargs):
         
         super().__init__(major_filter = {"sites":sites}, service=service)
-        
-        if not kwargs:
-            kwargs = {}
-        
-        if service == 'iv':
-            _date_formatter = '%Y-%m-%dT%H:%M'
-        else:
-            _date_formatter = '%Y-%m-%d'
-               
-        kwargs.update({"startDT":datetime.strftime(start_date, _date_formatter), 
-                       "endDT":datetime.strftime(end_date, _date_formatter),
-                       "parameterCd":parameter
-                      })
-        
+
         self.data = self.get_data(**kwargs)
         self.core_data = None
     
