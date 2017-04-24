@@ -14,7 +14,7 @@ class pyUSGSError(Exception):
 
 class BaseQuery(object):
     '''
-    The basic query to access the USGS water data service
+    The basic query class to access the USGS water data service
     
     Parameters
     ----------
@@ -29,6 +29,8 @@ class BaseQuery(object):
         The service to query, 'dv' for daily values, 'iv' for instantaneous
     data_format: str
         The format in which to get the data. Defult is `json`, if changed the `get_data` funciton will not work.
+        
+        
     '''
   
   

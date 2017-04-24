@@ -1,6 +1,6 @@
 # USGS NWIS
 
-A lightweight extensible package to interact with the US Geological Survey's [National Water Information System.](https://waterservices.usgs.gov/). This package should be used by those familiar with the service, or willing to read it's documentation.
+A lightweight extensible package to interact with the US Geological Survey's [National Water Information System.](https://waterservices.usgs.gov/) This package should be used by those familiar with the service, or willing to read it's documentation.
 
 
 ## Features
@@ -12,7 +12,7 @@ A lightweight extensible package to interact with the US Geological Survey's [Na
 
 ## Usage
 
-Let's suppose we want recent stream flow data for Montague County, Texas (yeehaw Smokey) for the last 30 days. 
+Let's suppose we want stream flow data for Montague County, Texas (yeehaw Smokey) for the last 30 days. 
 
 ```
 >>> import usgs_nwis as us
