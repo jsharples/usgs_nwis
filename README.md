@@ -12,9 +12,9 @@ A lightweight extensible package to interact with the US Geological Survey's [Na
 
 ## Usage
 
-Let's suppose we want stream flow data for Montague County, Texas (yeehaw Smokey) for the last 30 days. 
+Let's suppose we want stream flow data for Montague County, Texas (yeehaw Smokey) for the last 30 days. The relevant county code is `48337` as we can see from the USGS [state and county codes](https://help.waterdata.usgs.gov/code/county_query?fmt=html).  
 
-```
+```python
 >>> import usgs_nwis as us
 >>> my_sites = us.SitesQuery(major_filter = {'countyCd':'48337'})
 >>> my_sites.get_site_ids(**{'period':'P30D', 'siteType':'ST'})
@@ -24,7 +24,7 @@ Let's suppose we want stream flow data for Montague County, Texas (yeehaw Smokey
 There is only one site with stream flow data in the past 30 days.
 Let's get the the data:
 
-```
+```python
 >>> my_data = us.DataBySites(sites=['07315525'],**{'period':'P30D', 'siteType':'ST'})
 >>> my_data.make_core_data()
 ```
@@ -39,7 +39,7 @@ For more information on available filters refer to the useful links below, parti
 #### matplotlib
 Since I have stuck with the standard library for this project, there is no plotting functionality included. However, for those wishing to plot the data using `matplotlib` the following function will give basic plots from a `core_data` dict.
 
-```
+```python
 import matplotlib.pyplot as plt
 def plot_core_data(core_data):
 
@@ -55,7 +55,7 @@ def plot_core_data(core_data):
 #### pandas
 For `pandas` users, each time series in the `core_data` dict can be converted to a `DataFrame` like so:
 
-```
+```python
 import pandas as pd
 pd.DataFrame(my_data.core_data[0]['data'])
 ```
