@@ -122,10 +122,12 @@ class SitesQuery(BaseQuery):
     def __init__(self, major_filter):
         
         super().__init__(major_filter = major_filter, service = 'site', data_format = 'rdb')
-        
+        self.sites = None
         
     def get_data(self, **kwargs): 
-        
+        '''
+        Get data from the USGS sites service
+        '''
         if not self.raw_data:
             self.raw_data = self._get_raw_data(**kwargs)
         
@@ -151,11 +153,13 @@ class SitesQuery(BaseQuery):
         return self.data
     
     def get_site_ids(self, **kwargs):
-        
+        '''
+        Make a list of the site IDs from this query
+        '''
         if not self.data:
             self.get_data(**kwargs)
-        
-        return [s['site_no'] for s in self.data['data']]
+        self.sites = [s['site_no'] for s in self.data['data']]
+        return self.sites
             
    
    
@@ -187,15 +191,3 @@ class DataBySites(BaseQuery):
             ))
         
         self.core_data = core_data
-        
-    def plot_data(self):
-        
-        if not self.core_data:
-            self.make_core_data()
-        
-        for ts in self.core_data:
-            plt.figure(figsize=(15,7))          
-            plt.plot([self._date_parse(x['dateTime']) for x in ts['data']],[x['value'] for x in ts['data']])
-            plt.title(ts['site']+': '+ts['name'])
-            plt.ylabel(ts['description'])
-            plt.show()
