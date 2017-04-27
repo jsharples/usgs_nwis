@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta
 import gzip
 import io
-import matplotlib.pyplot as plt
+
 
 class pyUSGSError(Exception):
         pass
