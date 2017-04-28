@@ -13,7 +13,7 @@ class pyUSGSError(Exception):
 
 
 class BaseQuery(object):
-    '''
+    """
     The basic query class to access the USGS water data service
     
     Parameters
@@ -24,14 +24,15 @@ class BaseQuery(object):
         * stateCd - for a state abbreviaiton e.g. "ny"
         * huc - for a list of Hydrologic Unit Codes
         * bBox - specifiying a lat long bounding box
-        * countyCd - for a list of county numbers      
+        * countyCd - for a list of county numbers 
+        Each query to the USGS NWIS must include one, and only one, of these filters.
     service: str
         The service to query, 'dv' for daily values, 'iv' for instantaneous
     data_format: str
         The format in which to get the data. Defult is `json`, if changed the `get_data` funciton will not work.
         
         
-    '''
+    """
   
   
     def __init__(self, major_filter, service='dv', data_format = 'json'):
@@ -50,6 +51,19 @@ class BaseQuery(object):
   
     
     def get_data(self, **kwargs):
+        """
+        Get data form the USGS webservice and parse to a python dictionary.
+        
+        Parameters
+        ----------
+        **kwargs : dict
+            A dictionary specifying the search and filter items for this query.
+        
+        Returns
+        ----------
+        dict
+            A dictionary of the requested data
+        """
         
         if not self.raw_data:
             self._get_raw_data(**kwargs)
@@ -59,7 +73,9 @@ class BaseQuery(object):
         return self.data
     
     def _make_request_url(self, **kwargs):
-       
+        """
+        Make the request URL from kwargs
+        """
         kwargs.update(self.major_filter)
         kwargs.update(self._format)
         
@@ -67,6 +83,7 @@ class BaseQuery(object):
             
             try:
                 assert not isinstance(kwargs[arg], str)
+                #multiple values must be seperated by a comma
                 kwargs[arg] = ','.join(map(str, kwargs[arg]))
                 
             except:
@@ -76,10 +93,13 @@ class BaseQuery(object):
    
    
     def _get_raw_data(self, **kwargs):
-
+        """
+        Get the raw data response 
+        """
+        
         self.request_url = self._make_request_url(**kwargs)
-        #print(self.request_url)
-                
+        
+        #the USGS requests that users use gzip where possible
         data_request = request.Request(
                     self.request_url,
                     headers={"Accept-Encoding": "gzip"})
@@ -96,7 +116,12 @@ class BaseQuery(object):
     
     @staticmethod
     def _date_parse(str_date):
+        """
+        Function for parsing dates.
         
+        Note that the USGS use ISO_8601 for date formats, including a ':' in the timezone. 
+        There does not appear to be a simple way to parse this to a datetime object.
+        """
         if len(str_date) == 29 and str_date[-3]==':':
             str_date = str_date[:-3]+str_date[-2:]
             return datetime.strptime(str_date,'%Y-%m-%dT%H:%M:%S.%f%z')
@@ -115,19 +140,50 @@ class BaseQuery(object):
         
 
 class SitesQuery(BaseQuery):
-    '''
-        Query the USGS sites service
-    '''
+    """
+    Class to access the Site Service
+    
+    Parameters
+    ----------
+    major_filter: dict 
+        Single key value pair, values can be lists, keys must be one of:
+        * sites - for a list of specifc site ids
+        * stateCd - for a state abbreviaiton e.g. "ny"
+        * huc - for a list of Hydrologic Unit Codes
+        * bBox - specifiying a lat long bounding box
+        * countyCd - for a list of county numbers 
+        Each query to the USGS NWIS must include one, and only one, of these filters.
+    service: str
+        The service to query, 'dv' for daily values, 'iv' for instantaneous
+    data_format: str
+        The format in which to get the data. Defult is `json`, if changed the `get_data` funciton will not work.
+        
+        
+    """
+
     
     def __init__(self, major_filter):
         
         super().__init__(major_filter = major_filter, service = 'site', data_format = 'rdb')
         self.sites = None
-        
+    
+    #we cannot use BaseQuery.get_data because the Site Service does not offer JSON    
     def get_data(self, **kwargs): 
-        '''
-        Get data from the USGS sites service
-        '''
+        """
+        Get data form the USGS Site Service and parse to a python dictionary.
+        
+        Parameters
+        ----------
+        **kwargs : dict
+            A dictionary specifying the search and filter items for this query.
+        
+        Returns
+        ----------
+        dict
+            A dictionary of the requested site data
+        """
+
+        
         if not self.raw_data:
             self.raw_data = self._get_raw_data(**kwargs)
         
@@ -153,9 +209,19 @@ class SitesQuery(BaseQuery):
         return self.data
     
     def get_site_ids(self, **kwargs):
-        '''
-        Make a list of the site IDs from this query
-        '''
+        """
+        Create a list of the sites found by this query.
+        
+        Parameters
+        ----------
+        **kwargs : dict
+            A dictionary specifying the search and filter items for this query.
+        
+        Returns
+        ----------
+        list
+            A list of site IDs matching the search and filters for this query.
+        """
         if not self.data:
             self.get_data(**kwargs)
         self.sites = [s['site_no'] for s in self.data['data']]
@@ -164,9 +230,19 @@ class SitesQuery(BaseQuery):
    
    
 class DataBySites(BaseQuery):
-    '''
-        Query class to get data by site ID
-    '''
+    """
+    Class to access data bases on a list of sites. 
+    
+    Parameters
+    ----------
+    sites: list 
+        A list of sites IDs to query for data
+    service: str
+        The service to query, 'dv' for daily values, 'iv' for instantaneous
+    **kwargs : dict
+        A dictionary specifying the search and filter items for this query. 
+        
+    """
     def __init__(self, sites, service='dv', **kwargs):
         
         super().__init__(major_filter = {"sites":sites}, service=service)
@@ -175,7 +251,18 @@ class DataBySites(BaseQuery):
         self.core_data = None
     
     def make_core_data(self):
+        """
+        Make a simplified version of the data containing only 'core' data fields.
+    
+        Parameters
+        ----------
+        none
         
+        Returns
+        ----------
+        dict
+            A simplified dictionary of the requested site data
+        """
         core_data = []
         for ts in self.data['value']['timeSeries']:
             
@@ -191,3 +278,5 @@ class DataBySites(BaseQuery):
             ))
         
         self.core_data = core_data
+        
+        return self.core_data
